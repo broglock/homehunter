@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manitoba Home Tracker</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f4f6fa;color:#1c2430}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 60px}
+h1{font-size:21px;margin:0 0 2px}
+.sub{color:#5b6675;font-size:13px;margin-bottom:16px}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid #e1e6ee;border-radius:10px;padding:10px 14px;min-width:112px}
+.stat .n{font-size:20px;font-weight:700;color:#1f3864}
+.stat .l{font-size:11px;color:#6b7686;text-transform:uppercase;letter-spacing:.4px}
+.controls{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px}
+.ctl{display:flex;flex-direction:column;gap:4px}
+.ctl label{font-size:11px;color:#6b7686;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.ctl select,.ctl input{font-size:13px;padding:6px 8px;border:1px solid #cfd6e2;border-radius:7px;background:#fff;color:#1c2430}
+.ctl input[type=text]{min-width:160px}
+.reset{background:#eef1f7;border:1px solid #cfd6e2;color:#33405a;border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;font-weight:600}
+.reset:hover{background:#e2e7f1}
+.exclbar{background:#fff;border:1px solid #f1d6d3;border-left:4px solid #b3261e;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.exclbar .lbl{font-size:12px;font-weight:700;color:#b3261e;text-transform:uppercase;letter-spacing:.3px}
+.exclbar input{font-size:13px;padding:6px 8px;border:1px solid #cfd6e2;border-radius:7px;min-width:170px}
+.addbtn{background:#b3261e;color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.addbtn:hover{background:#8f1d17}
+.exchip{display:inline-flex;align-items:center;gap:6px;background:#fde8e6;color:#8f1d17;border:1px solid #f3b6b0;border-radius:14px;padding:3px 10px;font-size:12px;font-weight:600}
+.exchip button{background:none;border:none;color:#8f1d17;cursor:pointer;font-size:13px;line-height:1;padding:0}
+.exchip.locked{background:#eef1f7;color:#5b6675;border-color:#d6dce6}
+.exnote{font-size:11px;color:#8a93a3;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.card{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:14px 15px;display:flex;flex-direction:column;gap:8px;position:relative;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 16px rgba(31,56,100,.10)}
+.card.s-interested{border-color:#1f9d55;box-shadow:0 0 0 1px #1f9d55 inset}
+.card.s-maybe{border-color:#d99100;box-shadow:0 0 0 1px #d99100 inset}
+.card.s-passed{opacity:.55}
+.toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.addr{font-size:15px;font-weight:700;line-height:1.25}
+.area{font-size:12px;color:#6b7686}
+.score{flex:none;background:#1f3864;color:#fff;border-radius:8px;font-weight:700;font-size:15px;padding:4px 9px;text-align:center;min-width:46px}
+.score small{display:block;font-size:8px;font-weight:600;opacity:.85;letter-spacing:.3px}
+.score.boosted{background:#1f9d55}
+.price{font-size:17px;font-weight:700;color:#1f9d55}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:#eef1f7;color:#33405a;border-radius:6px;padding:3px 7px;font-size:11px;font-weight:600}
+.row{font-size:12px;color:#3b4658;line-height:1.4}
+.row b{color:#1c2430}
+.flag{font-size:11.5px;border-radius:6px;padding:5px 8px;line-height:1.35}
+.flag.warn{background:#fff4e2;color:#8a5a00;border:1px solid #f4d499}
+.flag.info{background:#eef4ff;color:#244a86;border:1px solid #cfe0fb}
+.newbadge{position:absolute;top:-8px;left:-8px;background:#e8403d;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;letter-spacing:.5px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.confirm{background:#f1f9f3;border:1px solid #cfe6d6;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.cfh{font-size:10.5px;font-weight:700;color:#1f7a44;text-transform:uppercase;letter-spacing:.3px}
+.cfitem{display:flex;align-items:center;gap:7px;font-size:12px;color:#33405a;cursor:pointer}
+.cfitem .pts{margin-left:auto;font-weight:700;color:#1f9d55;font-size:11px}
+.cfitem input{width:15px;height:15px;cursor:pointer;accent-color:#1f9d55}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.sbtn{flex:1;min-width:60px;border:1px solid #cfd6e2;background:#fff;border-radius:7px;padding:6px 4px;font-size:11.5px;font-weight:600;cursor:pointer;color:#33405a}
+.sbtn:hover{background:#f2f5fb}
+.sbtn.on-interested{background:#1f9d55;border-color:#1f9d55;color:#fff}
+.sbtn.on-maybe{background:#d99100;border-color:#d99100;color:#fff}
+.sbtn.on-passed{background:#6b7686;border-color:#6b7686;color:#fff}
+.exbtn{border:1px solid #f3b6b0;background:#fff;color:#b3261e;border-radius:7px;padding:6px 8px;font-size:11.5px;font-weight:600;cursor:pointer}
+.exbtn:hover{background:#fde8e6}
+.link{display:block;text-align:center;font-size:13px;font-weight:700;color:#fff;background:#1f3864;text-decoration:none;padding:9px 10px;border-radius:8px;margin:2px 0}
+.link:hover{background:#16294a}
+.urltext{font-size:10.5px;color:#8a93a3;word-break:break-all;line-height:1.3}
+.notes{width:100%;border:1px solid #cfd6e2;border-radius:7px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;min-height:34px;color:#1c2430}
+.empty{text-align:center;color:#6b7686;padding:40px;font-size:14px}
+.foot{margin-top:24px;font-size:11px;color:#8a93a3;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Manitoba Home Tracker</h1>
+  <div class="sub" id="sub"></div>
+  <div class="stats" id="stats"></div>
+  <div class="controls">
+    <div class="ctl"><label>Search</label><input type="text" id="q" placeholder="address, area, MLS#"></div>
+    <div class="ctl"><label>Region</label><select id="region"><option value="">All</option><option>Winnipeg</option><option>North/East</option><option>West/South</option></select></div>
+    <div class="ctl"><label>Max price</label><select id="price"><option value="">Any</option><option value="600000">$600K</option><option value="650000">$650K</option><option value="700000">$700K</option></select></div>
+    <div class="ctl"><label>Max drive (min)</label><select id="mins"><option value="">Any</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="40">40</option><option value="90">90</option></select></div>
+    <div class="ctl"><label>Min sq ft</label><select id="sqft"><option value="">1600+</option><option value="1700">1700+</option><option value="1800">1800+</option><option value="2000">2000+</option></select></div>
+    <div class="ctl"><label>Garage</label><select id="garage"><option value="">Any</option><option value="attached">Attached</option><option value="double">Double</option></select></div>
+    <div class="ctl"><label>Build</label><select id="build"><option value="">Any</option><option value="new">New / near-new</option><option value="resale">Resale</option></select></div>
+    <div class="ctl"><label>My status</label><select id="status"><option value="">All</option><option value="interested">Interested</option><option value="maybe">Maybe</option><option value="passed">Passed</option><option value="unmarked">Unmarked</option></select></div>
+    <div class="ctl"><label>Sort by</label><select id="sort"><option value="score">Match score</option><option value="price_asc">Price low</option><option value="price_desc">Price high</option><option value="sqft_desc">Sq ft</option><option value="mins_asc">Drive</option><option value="new">Newest listed</option></select></div>
+    <button class="reset" id="reset">Reset filters</button>
+  </div>
+  <div class="exclbar">
+    <span class="lbl">Exclude areas</span>
+    <input type="text" id="exclInput" placeholder="e.g. Selkirk, Stonewall, Niverville">
+    <button class="addbtn" id="exclAdd">+ Add exclusion</button>
+    <span id="exclChips"></span>
+    <span class="exnote">Homes whose town, region, or address matches an excluded word are hidden below. Saved in this browser. Each card also has a quick "Exclude this area" button.</span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">No homes match these filters.</div>
+  <div class="foot" id="foot"></div>
+</div>
+<script>
+const PAYLOAD = {"meta": {"generated": "2026-06-15", "currency": "CAD", "budget_min": 575000, "budget_max": 700000, "heating_rule": "natural gas or propane; electric furnace excluded", "lakeshore_rule": "Lake Winnipeg waterfront/lakeshore allowed; electric heat still excluded"}, "candidates": [{"mls": "202612323", "address": "75 Augusta Dr", "area": "Waverley Heights (Winnipeg)", "region": "Winnipeg", "mins": 15, "price": 659900, "sqft": 1860, "year": 1980, "beds": 3, "baths": 3.5, "heating": "Natural gas forced air", "garage": "Double attached", "lot": "Fenced; lakefront", "view": "Lake view", "condition": "Updated kitchen & windows ('22); good", "newbuild": "No", "history": "Resale; full history not yet retrieved", "flood": "Not flagged; interior lot", "score": 30, "url": "https://www.royallepage.ca/en/property/manitoba/winnipeg/75-augusta-dr/28279660/mls202612323/", "first_seen": "2026-06-15"}, {"mls": "202607614", "address": "153 Gardner Trail", "area": "West St. Paul", "region": "North/East", "mins": 20, "price": 688900, "sqft": 1912, "year": 2026, "beds": 4, "baths": 3, "heating": "Natural gas high-eff furnace", "garage": "Attached (22x22)", "lot": "44x136; backs reserve", "view": "Park/reserve adj.", "condition": "New build w/ warranty; quartz", "newbuild": "Yes", "history": "New build - no prior history", "flood": "Meadowlands interior (not riverfront)", "score": 30, "url": "https://www.royallepage.ca/en/property/manitoba/west-st-paul/153-gardner-trail/28010801/mls202607614/", "first_seen": "2026-06-15"}, {"mls": "202613761", "address": "331 Tanager Trl", "area": "Sage Creek (Winnipeg)", "region": "Winnipeg", "mins": 15, "price": 649900, "sqft": 1808, "year": 2019, "beds": 3, "baths": 3, "heating": "Natural gas high-eff forced air", "garage": "Double attached", "lot": "44x115; south-facing yard", "view": "Backs greenspace", "condition": "Former show home; quartz, move-in", "newbuild": "Near-new", "history": "Likely builder/new; no history found", "flood": "Not flagged; interior", "score": 29, "url": "https://www.royallepage.ca/en/property/manitoba/winnipeg/331-tanager-trl/28419253/mls202613761/", "first_seen": "2026-06-15"}, {"mls": "202607258", "address": "109 Gardner Trail", "area": "West St. Paul", "region": "North/East", "mins": 20, "price": 676284, "sqft": 1765, "year": 2026, "beds": 4, "baths": 3, "heating": "Natural gas forced air", "garage": "Oversized attached", "lot": "No neighbours front/back", "view": "Open outlook", "condition": "New build; 25% better than code", "newbuild": "Yes", "history": "New build - no prior history", "flood": "Meadowlands interior (not riverfront)", "score": 29, "url": "https://www.royallepage.ca/en/property/manitoba/west-st-paul/109-gardner-trail-street/27801727/mls202607258/", "first_seen": "2026-06-15"}, {"mls": "202604307", "address": "61 Harvest Crescent", "area": "Lorette", "region": "North/East", "mins": 25, "price": 679900, "sqft": 1904, "year": 2026, "beds": 3, "baths": 2.5, "heating": "Natural gas high-eff furnace", "garage": "Double attached", "lot": "55x100 cul-de-sac; trails", "view": "Greenspace/trails", "condition": "New build (to-be-built); warranty", "newbuild": "Yes", "history": "New build - no prior history", "flood": "Lorette interior (not riverfront)", "score": 29, "url": "https://www.royallepage.ca/en/property/manitoba/lorette/61-harvest-crescent/27575399/mls202604307/", "first_seen": "2026-06-15"}, {"mls": "202613112", "address": "52 Wildfire Dr", "area": "Royalwood (Winnipeg)", "region": "Winnipeg", "mins": 15, "price": 599900, "sqft": 1833, "year": 2001, "beds": 4, "baths": 3, "heating": "Natural gas forced air", "garage": "Double attached (insulated)", "lot": "42x118; deck; near park", "view": "Park/trails", "condition": "Granite kitchen; good condition", "newbuild": "No", "history": "Resale; full history not yet retrieved", "flood": "Not flagged; interior", "score": 28, "url": "https://www.royallepage.ca/en/property/manitoba/winnipeg/52-wildfire-dr/28353480/mls202613112/", "first_seen": "2026-06-15"}, {"mls": "202608128", "address": "2 Schubert Lane", "area": "St. Andrews (Mapleton)", "region": "North/East", "mins": 30, "price": 619900, "sqft": 1930, "year": 1997, "beds": 4, "baths": 3.5, "heating": "Natural gas forced air", "garage": "Double attached + double detached (heated)", "lot": "~1.4 ac treed lot (200x301); above-ground pool", "view": "Treed / country", "condition": "Move-in ready; new shingles 2025, granite kitchen, finished basement", "newbuild": "No", "history": "Resale; full history not yet retrieved", "flood": "Inland Mapleton lot (not riverfront/lakeshore)", "score": 28, "url": "https://www.royallepage.ca/en/property/manitoba/st-andrews/2-schubert-lane/27893937/mls202608128/", "first_seen": "2026-06-15"}, {"mls": "202613095", "address": "14 Linden Lake Dr", "area": "Oakbank", "region": "North/East", "mins": 25, "price": 629900, "sqft": 1607, "year": 2005, "beds": 5, "baths": 3, "heating": "Natural gas forced air", "garage": "Double attached", "lot": "10,650 sf; treed; field views", "view": "Field views", "condition": "Move-in ready; updated mechanicals", "newbuild": "No", "history": "RELISTED - prior ask ~$649,900, ~$20K cut", "flood": "Aspen Lakes; not riverfront", "score": 27, "url": "https://www.royallepage.ca/en/property/manitoba/oakbank/14-linden-lake-dr/28353478/mls202613095/", "first_seen": "2026-06-15"}, {"mls": "202609500", "address": "804 Holly Ave", "area": "Crescent Park (Winnipeg)", "region": "Winnipeg", "mins": 12, "price": 669900, "sqft": 2142, "year": 1970, "beds": 4, "baths": 2, "heating": "Natural gas high-eff (+ suppl. electric baseboard)", "garage": "None (front parking pad)", "lot": "58x120; treed; backs greenspace; hot tub", "view": "Backs green space", "condition": "Modern renos 20-24; NO garage", "newbuild": "No", "history": "Resale; full history not yet retrieved", "flood": "Not flagged; interior", "score": 26, "url": "https://www.royallepage.ca/en/property/manitoba/winnipeg/804-holly-ave/28353475/mls202609500/", "first_seen": "2026-06-15"}, {"mls": "202610531", "address": "86 St Albans Rd", "area": "Whyte Ridge (Winnipeg)", "region": "Winnipeg", "mins": 18, "price": 649900, "sqft": 2225, "year": 2003, "beds": 4, "baths": 3.5, "heating": "Natural gas high-eff (+ electric in-floor tile only)", "garage": "Double attached", "lot": "45x106; fenced (20)", "view": "None notable", "condition": "Well-maintained; updated", "newbuild": "No", "history": "Resale; full history not yet retrieved", "flood": "Not flagged; interior", "score": 26, "url": "https://www.royallepage.ca/en/property/manitoba/winnipeg/86-st-albans-rd/28360684/mls202610531/", "first_seen": "2026-06-15"}, {"mls": "202613458", "address": "43 Bernfield Bay", "area": "Richmond West (Winnipeg)", "region": "Winnipeg", "mins": 18, "price": 599900, "sqft": 2170, "year": 1998, "beds": 4, "baths": 3.5, "heating": "Natural gas forced air", "garage": "Double attached", "lot": "10,403 sf pie lot; park-like", "view": "Large yard", "condition": "Solid; ORIGINAL carpets/paint (cosmetically dated)", "newbuild": "No", "history": "Resale; full history not yet retrieved", "flood": "Not flagged; interior", "score": 25, "url": "https://www.royallepage.ca/en/property/manitoba/winnipeg/43-bernfield-bay/28387042/mls202613458/", "first_seen": "2026-06-15"}, {"mls": "202607533", "address": "11 Hawthorne Way", "area": "Niverville", "region": "North/East", "mins": 35, "price": 649900, "sqft": 1663, "year": 2020, "beds": 5, "baths": 3, "heating": "Natural gas high-eff forced air", "garage": "Double attached (heated)", "lot": "70ft; fully fenced; deck + gas BBQ", "view": "None notable", "condition": "Move-in ready; modern", "newbuild": "Near-new", "history": "Likely builder/new; no history found", "flood": "East of Red (not riverfront)", "score": 25, "url": "https://www.royallepage.ca/en/property/manitoba/niverville/11-hawthorne-way/27914529/mls202607533/", "first_seen": "2026-06-15"}, {"mls": "202608673", "address": "5 Minaki Bay", "area": "Dugald (RM Springfield)", "region": "North/East", "mins": 20, "price": 628900, "sqft": 2174, "year": 2026, "beds": 5, "baths": 3, "heating": "High-eff forced air (Dugald gas-serviced; confirm gas vs propane)", "garage": "Double attached (insulated)", "lot": "Large pie lot, cul-de-sac; municipal water/sewer", "view": "Trails/pond nearby", "condition": "New build (to-be-built); 10-yr warranty", "newbuild": "Yes", "history": "New build - no prior history", "flood": "Dugald subdivision; not riverfront", "score": 22, "url": "https://www.remax.ca/mb/dugald-real-estate/5-minaki-bay-wp_idm00000647-202608673-lst", "first_seen": "2026-06-15"}, {"mls": "202530116", "address": "9 Minaki Bay", "area": "Dugald (RM Springfield)", "region": "North/East", "mins": 20, "price": 582900, "sqft": 1922, "year": 2026, "beds": 4, "baths": 3, "heating": "High-eff forced air (Dugald gas-serviced; confirm gas vs propane)", "garage": "Double attached (insulated)", "lot": "Pie lot, cul-de-sac; municipal water/sewer", "view": "Trails/greenspace/pond", "condition": "New build (to-be-built); 10-yr warranty", "newbuild": "Yes", "history": "New build - no prior history", "flood": "Dugald subdivision; not riverfront", "score": 21, "url": "https://www.remax.ca/mb/dugald-real-estate/9-minaki-bay-wp_idm00000647-202530116-lst", "first_seen": "2026-06-15"}, {"mls": "202613165", "address": "68 Stone Ridge Dr", "area": "Stonewall", "region": "North/East", "mins": 25, "price": 599900, "sqft": 1599, "year": 2012, "beds": 4, "baths": 3, "heating": "Natural gas forced air", "garage": "Double attached", "lot": "59x142; deck + gazebo", "view": "None notable", "condition": "Good; SOLD AS-IS (verify terms)", "newbuild": "No", "history": "Resale; (1 sqft under 1600 above-grade)", "flood": "Stonewall high ground (NW); not flood-prone", "score": 24, "url": "https://www.royallepage.ca/en/property/manitoba/stonewall/68-stone-ridge-dr/28369161/mls202613165/", "first_seen": "2026-06-15"}, {"mls": "202605477", "address": "20053 Minerva Rd", "area": "Gimli RM (Lake Winnipeg)", "region": "North/East", "mins": 75, "price": 649900, "sqft": 2245, "year": 2013, "beds": "n/a", "baths": "n/a", "heating": "In-floor radiant - FUEL UNCONFIRMED (verify gas/propane, NOT electric; only fireplace is gas)", "garage": "Triple attached", "lot": "Lake-access waterfront; private dock; well/septic", "view": "Lake Winnipeg view", "condition": "Year-round eco/straw-bale build (2013); not a reno", "newbuild": "No", "history": "WATERFRONT now allowed; CONFIRM heating fuel before offer (radiant fuel unstated)", "flood": "WATERFRONT Lake Winnipeg - shoreline erosion / high-water exposure (allowed per your choice)", "score": 26, "url": "https://www.royallepage.ca/en/property/manitoba/gimli-rm/20053-minerva-rd/27637497/mls202605477/", "first_seen": "2026-06-15"}]};
+const DATA = PAYLOAD.candidates;
+const META = PAYLOAD.meta;
+const KEY = "mb_house_tracker_marks_v1";
+const EXKEY = "mb_house_excluded_areas_v1";
+const CFKEY = "mb_house_confirms_v1";
+function loadJSON(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+let marks = loadJSON(KEY) || {};
+let userExcl = loadJSON(EXKEY) || [];
+let confirms = loadJSON(CFKEY) || {};
+const metaExcl = (META.excluded_areas || []).map(s=>String(s).toLowerCase());
+function saveMarks(){localStorage.setItem(KEY, JSON.stringify(marks))}
+function saveExcl(){localStorage.setItem(EXKEY, JSON.stringify(userExcl))}
+function saveConfirms(){localStorage.setItem(CFKEY, JSON.stringify(confirms))}
+function fmt(n){return "$"+Number(n).toLocaleString("en-CA")}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+const GEN = META.generated;
+function isNew(c){return daysBetween(c.first_seen, GEN) <= 2}
+function allExcl(){return [...new Set([...userExcl.map(s=>s.toLowerCase()), ...metaExcl])].filter(Boolean)}
+function isExcluded(c){const hay=(c.address+" "+c.area+" "+c.region).toLowerCase();return allExcl().some(t=>hay.includes(t))}
+
+// ---- confirmable attributes that boost score ----
+const GENERIC=[{key:'gen_hood',label:'Good neighbourhood (confirmed)',pts:1},{key:'gen_commute',label:'Commute works for us',pts:1},{key:'gen_visit',label:'Visited & liked in person',pts:1}];
+function dataItems(c){
+  const items=[];
+  const h=(c.heating||"")+" "+(c.history||"")+" "+(c.newbuild||"");
+  if(/unconfirm|confirm gas|fuel unstated|verify gas|gas vs propane/i.test(h)) items.push({key:'cf_heat',label:'Confirmed gas/propane heat',pts:2});
+  if(String(c.beds)==='n/a'||String(c.baths)==='n/a') items.push({key:'cf_beds',label:'Confirmed beds & baths',pts:1});
+  if(/no garage|none/i.test(c.garage||"")) items.push({key:'cf_garage',label:'Parking/garage works for us',pts:1});
+  if(/original|dated|as-is|revamp|reno/i.test((c.condition||"")+" "+(c.history||""))) items.push({key:'cf_cond',label:'Condition OK after viewing',pts:2});
+  if(/waterfront|erosion|flood/i.test(c.flood||"")) items.push({key:'cf_flood',label:'Flood/erosion risk acceptable',pts:1});
+  if(/relist/i.test(c.history||"")) items.push({key:'cf_relist',label:'Relisting reason checked out',pts:1});
+  return items;
+}
+function allItems(c){return [...dataItems(c), ...GENERIC]}
+function isChecked(mls,key){return !!(confirms[mls]&&confirms[mls][key])}
+function bonus(c){return allItems(c).reduce((s,it)=>s+(isChecked(c.mls,it.key)?it.pts:0),0)}
+function effScore(c){return c.score + bonus(c)}
+function toggleConfirm(mls,key){confirms[mls]=confirms[mls]||{};confirms[mls][key]=!confirms[mls][key];saveConfirms();render()}
+
+const els = {};
+["q","region","price","mins","sqft","garage","build","status","sort"].forEach(id=>els[id]=document.getElementById(id));
+document.getElementById("reset").onclick=()=>{Object.values(els).forEach(e=>{if(e.tagName==="SELECT")e.selectedIndex=0;else e.value=""});els.sort.value="score";render()};
+Object.values(els).forEach(e=>e.addEventListener("input",render));
+function addExcl(v){v=(v||"").trim();if(v && !userExcl.map(x=>x.toLowerCase()).includes(v.toLowerCase())){userExcl.push(v);saveExcl();renderChips();render()}}
+document.getElementById("exclAdd").onclick=()=>{addExcl(document.getElementById("exclInput").value);document.getElementById("exclInput").value=""};
+document.getElementById("exclInput").addEventListener("keydown",e=>{if(e.key==="Enter"){addExcl(e.target.value);e.target.value=""}});
+function renderChips(){
+  const box=document.getElementById("exclChips");box.innerHTML="";
+  metaExcl.forEach(t=>{const s=document.createElement("span");s.className="exchip locked";s.textContent="lock "+t;box.appendChild(s)});
+  userExcl.forEach((t,i)=>{const s=document.createElement("span");s.className="exchip";const b=document.createElement("button");b.textContent="x";b.title="Remove exclusion";b.onclick=()=>{userExcl.splice(i,1);saveExcl();renderChips();render()};s.appendChild(document.createTextNode(t+" "));s.appendChild(b);box.appendChild(s)});
+}
+function passFilters(c){
+  if(isExcluded(c)) return false;
+  const q=els.q.value.trim().toLowerCase();
+  if(q && !((c.address+" "+c.area+" "+c.mls).toLowerCase().includes(q))) return false;
+  if(els.region.value && c.region!==els.region.value) return false;
+  if(els.price.value && c.price>+els.price.value) return false;
+  if(els.mins.value && c.mins>+els.mins.value) return false;
+  if(els.sqft.value && c.sqft<+els.sqft.value) return false;
+  if(els.garage.value==="attached" && !/attached/i.test(c.garage)) return false;
+  if(els.garage.value==="double" && !/double/i.test(c.garage)) return false;
+  if(els.build.value==="new" && !/yes|near/i.test(c.newbuild)) return false;
+  if(els.build.value==="resale" && /yes|near/i.test(c.newbuild)) return false;
+  const st=(marks[c.mls]&&marks[c.mls].status)||"";
+  if(els.status.value==="unmarked" && st) return false;
+  if(["interested","maybe","passed"].includes(els.status.value) && st!==els.status.value) return false;
+  return true;
+}
+function sortList(list){
+  const s=els.sort.value;
+  const by={score:(a,b)=>effScore(b)-effScore(a),price_asc:(a,b)=>a.price-b.price,price_desc:(a,b)=>b.price-a.price,
+    sqft_desc:(a,b)=>b.sqft-a.sqft,mins_asc:(a,b)=>a.mins-b.mins,new:(a,b)=>new Date(b.first_seen)-new Date(a.first_seen)};
+  return list.slice().sort(by[s]||by.score);
+}
+function setStatus(mls,val){marks[mls]=marks[mls]||{};marks[mls].status=(marks[mls].status===val)?"":val;saveMarks();render()}
+function setNote(mls,val){marks[mls]=marks[mls]||{};marks[mls].notes=val;saveMarks();renderStats()}
+function townOf(c){return (c.area||"").split("(")[0].split(",")[0].trim()}
+function card(c){
+  const m=marks[c.mls]||{}; const st=m.status||"";
+  const warn=/RELIST|AS-IS|NO garage|original|electric|unconfirm|waterfront|erosion/i.test((c.history||"")+(c.condition||"")+(c.garage||"")+(c.heating||"")+(c.flood||""));
+  const town=townOf(c);
+  const b=bonus(c);
+  const items=allItems(c);
+  const d=document.createElement("div");
+  d.className="card"+(st?" s-"+st:"");
+  d.innerHTML=`
+    ${isNew(c)?'<div class="newbadge">NEW</div>':''}
+    <div class="toprow">
+      <div><div class="addr">${c.address}</div><div class="area">${c.area} - MLS ${c.mls}</div></div>
+      <div class="score ${b?'boosted':''}">${effScore(c)}<small>${b?('base '+c.score+' +'+b):'SCORE'}</small></div>
+    </div>
+    <div class="price">${fmt(c.price)}</div>
+    <div class="chips">
+      <span class="chip">${c.sqft} sqft</span>
+      <span class="chip">Built ${c.year}</span>
+      <span class="chip">${c.beds} bd / ${c.baths} ba</span>
+      <span class="chip">~${c.mins} min</span>
+    </div>
+    <div class="row"><b>Garage:</b> ${c.garage}</div>
+    <div class="row"><b>Yard:</b> ${c.lot}</div>
+    <div class="row"><b>View:</b> ${c.view} &nbsp;|&nbsp; <b>Heat:</b> ${c.heating}</div>
+    <div class="row"><b>Condition:</b> ${c.condition}</div>
+    <div class="flag ${warn?'warn':'info'}"><b>History/flags:</b> ${c.history}<br><b>Flood:</b> ${c.flood}</div>
+    <div class="confirm">
+      <div class="cfh">Confirm to boost score</div>
+      ${items.map(it=>`<label class="cfitem"><input type="checkbox" data-m="${c.mls}" data-k="${it.key}" ${isChecked(c.mls,it.key)?'checked':''}><span>${it.label}</span><span class="pts">+${it.pts}</span></label>`).join('')}
+    </div>
+    <a class="link" href="${c.url}" target="_blank" rel="noopener">View full listing</a>
+    <div class="urltext">${c.url}</div>
+    <div class="actions">
+      <button class="sbtn ${st==='interested'?'on-interested':''}" data-s="interested" data-m="${c.mls}">Interested</button>
+      <button class="sbtn ${st==='maybe'?'on-maybe':''}" data-s="maybe" data-m="${c.mls}">Maybe</button>
+      <button class="sbtn ${st==='passed'?'on-passed':''}" data-s="passed" data-m="${c.mls}">Pass</button>
+    </div>
+    <button class="exbtn" data-ex="${town.replace(/"/g,'&quot;')}">Exclude this area (${town})</button>
+    <textarea class="notes" placeholder="My notes..." data-m="${c.mls}">${(m.notes||"").replace(/</g,'&lt;')}</textarea>`;
+  d.querySelectorAll(".cfitem input").forEach(cb=>cb.onchange=()=>toggleConfirm(cb.dataset.m,cb.dataset.k));
+  d.querySelectorAll(".sbtn").forEach(x=>x.onclick=()=>setStatus(x.dataset.m,x.dataset.s));
+  d.querySelector(".exbtn").onclick=(e)=>addExcl(e.target.dataset.ex);
+  d.querySelector(".notes").addEventListener("input",e=>setNote(c.mls,e.target.value));
+  return d;
+}
+function renderStats(){
+  const counts={interested:0,maybe:0,passed:0};
+  DATA.forEach(c=>{const s=marks[c.mls]&&marks[c.mls].status;if(counts[s]!==undefined)counts[s]++});
+  const visible=DATA.filter(c=>!isExcluded(c));
+  const newcount=visible.filter(isNew).length;
+  const hidden=DATA.length-visible.length;
+  const boosted=DATA.filter(c=>bonus(c)>0).length;
+  const stats=[["Homes shown",visible.length],["New (<=2 days)",newcount],["Interested",counts.interested],["Maybe",counts.maybe],["Boosted",boosted],["Hidden by area",hidden]];
+  document.getElementById("stats").innerHTML=stats.map(s=>`<div class="stat"><div class="n">${s[1]}</div><div class="l">${s[0]}</div></div>`).join("");
+}
+function render(){
+  renderStats();
+  const list=sortList(DATA.filter(passFilters));
+  const grid=document.getElementById("grid");grid.innerHTML="";
+  document.getElementById("empty").style.display=list.length?"none":"block";
+  list.forEach(c=>grid.appendChild(card(c)));
+}
+document.getElementById("sub").textContent=`Updated ${GEN} - budget ${fmt(META.budget_min)}-${fmt(META.budget_max)} - ${DATA.length} homes. Tick the green "Confirm to boost score" boxes as you verify things; each raises the home's score and re-ranks it. Marks, notes, exclusions & confirmations save in this browser.`;
+document.getElementById("foot").innerHTML="Each card links to the live listing. Base Match Score is an estimate; your confirmations add to it. Verify flood mapping, square footage and heating before any offer. All your inputs persist locally across sessions and daily updates.";
+renderChips();
+render();
+</script>
+</body>
+</html>
